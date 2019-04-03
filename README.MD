@@ -3,6 +3,7 @@
 go package for playing with the gstreamer (gstlaunch) cli.
 
 ## supported image formats (DataSinks):
+- GRAY8
 - RGB
 - BGR
 - RGBA
@@ -14,8 +15,6 @@ go package for playing with the gstreamer (gstlaunch) cli.
 ## TODO:
 - audiosink support (DataSink)
 - better documentation
-- go image support
-- sdl image support
 - support more image formats for DataSinks
 
 ## NOTES:

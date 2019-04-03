@@ -13,13 +13,20 @@ type Gstreamer struct {
 	args    []string
 }
 
+const defaultGstBin = "gst-launch-1.0"
+
 // NewGstreamer creates a new Gstreamer instance
 func NewGstreamer(args ...string) (*Gstreamer, error) {
-	if err := exec.Command("gst-launch-1.0", "--version").Run(); err != nil {
+	return NewGstreamerFromPath(defaultGstBin, args...)
+}
+
+// NewGstreamerFromPath creates a new Gstreamer instance, uses given path to gst-launch binary
+func NewGstreamerFromPath(gstBin string, args ...string) (*Gstreamer, error) {
+	if err := exec.Command(gstBin, "--version").Run(); err != nil {
 		return nil, err
 	}
 	gst := &Gstreamer{
-		cmdName: "gst-launch-1.0",
+		cmdName: gstBin,
 		args:    []string{"-v"},
 	}
 	gst.args = append(gst.args, args...)

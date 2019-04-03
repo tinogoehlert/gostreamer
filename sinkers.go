@@ -40,6 +40,7 @@ type Caps struct {
 	Height      int
 	Framerate   int
 	PixelFormat string
+	Channels    int
 	Type        string
 	Name        string
 }
@@ -109,12 +110,24 @@ func (s *Sinker) parseCaps(line string) (*Caps, bool) {
 			}
 		}
 	}
-	if caps.Name != "" {
-		s.mut.Lock()
-		s.caps[caps.Name] = caps
-		s.mut.Unlock()
+
+	if caps.Name == "" || caps.PixelFormat == "" {
+		return nil, false
 	}
-	return &caps, caps.Name != ""
+	switch caps.PixelFormat {
+	case "GRAY8", "GRAY":
+		caps.Channels = 1
+	case "RGB", "BGR":
+		caps.Channels = 3
+	case "RGBA", "BGRA":
+		caps.Channels = 4
+	default:
+		return nil, false
+	}
+	s.mut.Lock()
+	s.caps[caps.Name] = caps
+	s.mut.Unlock()
+	return &caps, true
 }
 
 // Run runs the pipeline with the given sink
@@ -193,18 +206,9 @@ func (s *FdSink) Start(ctx context.Context) (*Caps, error) {
 }
 
 func (s *FdSink) startBuffReader(fd *os.File, caps *Caps) {
-	var depth int
-	switch caps.PixelFormat {
-	case "RGB", "BGR":
-		depth = 3
-	case "RGBA", "BGRA":
-		depth = 4
-	default:
-		return
-	}
-	buff := make([]byte, (caps.Width*depth)*caps.Height)
+	buff := make([]byte, (caps.Width*caps.Channels)*caps.Height)
 	for sz := 0; ; sz = 0 {
-		for sz < (caps.Width*depth)*caps.Height {
+		for sz < (caps.Width*caps.Channels)*caps.Height {
 			n, _ := fd.Read(buff[sz:])
 			sz += n
 		}

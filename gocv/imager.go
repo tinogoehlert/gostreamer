@@ -28,12 +28,20 @@ func (cvi *CvImager) ProduceMat(ctx context.Context, cb func(mat gocv.Mat) error
 		return err
 	}
 
+	var mt = gocv.MatTypeCV8UC1
+	switch caps.Channels {
+	case 3:
+		mt = gocv.MatTypeCV8UC3
+	case 4:
+		mt = gocv.MatTypeCV8UC4
+	}
+
 	for {
 		b := <-cvi.sink.DataChan()
 		img, err := gocv.NewMatFromBytes(
 			caps.Height,
 			caps.Width,
-			gocv.MatTypeCV8UC3,
+			mt,
 			b,
 		)
 		if err != nil || img.Empty() {
